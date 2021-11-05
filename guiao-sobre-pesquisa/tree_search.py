@@ -62,10 +62,12 @@ class SearchProblem:
 
 # Nos de uma arvore de pesquisa
 class SearchNode:
-    def __init__(self,state,parent,depth): 
+    def __init__(self,state,parent,depth,cost,heuristic): 
         self.state = state
         self.parent = parent
         self.depth=depth
+        self.cost=cost
+        self.heuristic=heuristic
 
     def in_parent(self,state):
         if self.parent==None:
@@ -85,7 +87,7 @@ class SearchTree:
     # construtor
     def __init__(self,problem, strategy='breadth'): 
         self.problem = problem
-        root = SearchNode(problem.initial, None,0)
+        root = SearchNode(problem.initial, None,0,0,0)
         self.open_nodes = [root]
         self.strategy = strategy
         self.solution = None
@@ -117,10 +119,10 @@ class SearchTree:
             self.non_terminals+=1
             for a in self.problem.domain.actions(node.state):
                 newstate = self.problem.domain.result(node.state,a)
-                
-                newnode = SearchNode(newstate,node,node.depth+1)
                 if node.in_parent(newstate) or node.depth==limit:
                     continue
+                cost=self.problem.domain.cost(node.state,a)
+                newnode = SearchNode(newstate,node,node.depth+1,node.cost+cost,self.problem.domain.heuristic(newstate,self.problem.goal))
                 lnewnodes.append(newnode)
             self.add_to_open(lnewnodes)
         return None
@@ -132,5 +134,15 @@ class SearchTree:
         elif self.strategy == 'depth':
             self.open_nodes[:0] = lnewnodes
         elif self.strategy == 'uniform':
-            pass
+            self.open_nodes.extend(lnewnodes)
+            self.open_nodes.sort(key=lambda node: node.cost)
+        elif self.strategy == 'greedy':
+            self.open_nodes.extend(lnewnodes)
+            self.open_nodes.sort(key=lambda node: node.heuristic)
+        
 
+
+
+    @property
+    def cost(self):
+        return self.solution.cost
