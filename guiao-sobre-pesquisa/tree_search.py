@@ -87,7 +87,7 @@ class SearchTree:
     # construtor
     def __init__(self,problem, strategy='breadth'): 
         self.problem = problem
-        root = SearchNode(problem.initial, None,0,0,0)
+        root = SearchNode(problem.initial, None,0,0,problem.domain.heuristic(problem.initial,problem.goal))
         self.open_nodes = [root]
         self.strategy = strategy
         self.solution = None
@@ -139,6 +139,12 @@ class SearchTree:
         elif self.strategy == 'greedy':
             self.open_nodes.extend(lnewnodes)
             self.open_nodes.sort(key=lambda node: node.heuristic)
+        elif self.strategy == 'a*':
+            self.open_nodes.extend(lnewnodes)
+            self.open_nodes.sort(key=lambda node: node.cost+node.heuristic)
+        else:
+            raise ValueError("Unknown strategy: " + self.strategy)
+        
         
 
 
